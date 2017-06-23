@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Module>
+    <ModulePrefs title="Orddeling"
+        description="Gadget til orddeling"
+        height="600"
+        width="600"
+        author="Nicolaus Schmidt">
+        <Require feature="setprefs"/>
+    </ModulePrefs>
+    <UserPref
+        name="orddel"
+        display_name="orddel"
+        datatype="list" 
+        required="true"
+        />
+<Content type="html" view="home">
+<![CDATA[
+<style type="text/css">
+body
+	{
+	font-family: Arial,sans-serif;
+	margin: 0;
+	padding:0;
+	}
+</style>
+
+<table id="dest" border="1" style="width: 100%;border-collapse:collapse;">
+   <tr style="background-color:#EEEEEE"><td style="width:50%">Ord, der skal deles</td><td>Adskil ord-delene med mellemrum</td><td style="width:10px;border-width:0px;"></td></tr>
+</table>
+
+
+<script type="text/javascript">
+
+function onLoad() {
+ var prefs = new _IG_Prefs();
+ var terms = prefs.getArray("orddel");
+ var strOutput=""; 
+ var index=0;
+ dest=document.getElementById("dest");
+
+ for(r=1;r<21;r++){
+	dest.insertRow(r);
+	for (c=0;c<3;c++) {
+		dest.rows[r].insertCell(c);
+		if(typeof terms[index]==='undefined')terms[index]="";
+			switch(c) {
+     		case 0:
+				dest.rows[r].cells[c].innerHTML=terms[index];
+        		break;
+     		case 1:
+				dest.rows[r].cells[c].innerHTML="<input type='text' name='"+terms[index]+"' style='width:100%;background-color:#FFFFCC' />";	
+        	break;
+    		 default:
+		  		dest.rows[r].cells[c].style.borderWidth="0px";
+		 		dest.rows[r].cells[c].innerHTML="<span></span>";
+		 	} 
+		if(c<2)index++; // Kun de to første celler
+	}
+ }
+
+}   
+
+gadgets.util.registerOnLoadHandler(onLoad);      
+
+</script>
+  ]]>
+</Content>
+
+<Content type="html" view="home">
+<![CDATA[
+<form method="post">
+<br />
+<input  type="button" value="&#x2713; Tjek" style="color:green" onclick="tjek()"/>
+<input  type="button" value="&#x2718; Slet alt" style="color:red" onclick="sletAlt()"/>
+<span id="smiley" style="color:#FFCC00;font-size:28pt"></span>
+</form>
+
+     
+<script type="text/javascript"> 
+  function tjek(){
+	var divForm=document.getElementById("dest");
+    var e = 0;
+    PPoint = 0;
+    var inputs = divForm.getElementsByTagName("input");
+    var tegn = divForm.getElementsByTagName("span");
+    var total = inputs.length;
+    for (var i = 0; i < inputs.length; i++)
+        if (inputs.item(i).type == "text") {
+        if (isEqualValues(trim(inputs.item(i).value), inputs.item(i).name)) {
+            tegn[e].style.fontSize = "16px";
+            tegn[e].innerHTML = "&#x2714;" + " ";
+            tegn[e].style.color="green";
+            PPoint++;
+        }
+        else {
+            tegn[e].style.fontSize = "16px";
+            tegn[e].innerHTML = "&#x2718;"; 
+            tegn[e].style.color="red";
+        };
+        e++;
+    }
+    PPoint = Math.round(100 * PPoint / total)
+    document.getElementById("smiley").innerHTML="&#x263A";
+    if (PPoint==100){
+    	document.getElementById("smiley").innerHTML="&#x263A";
+    }
+    else{
+    	document.getElementById("smiley").innerHTML="";
+    }
+
+ }
+
+ function sletAlt(){
+ 	var e=0;
+	var divForm=document.getElementById("dest");
+    var inputs = divForm.getElementsByTagName("input");
+    var tegn = divForm.getElementsByTagName("span");
+       for (i=0;i<inputs.length;i++){
+        if (inputs[i].type == "text"){
+        	inputs[i].value = "";
+ 			tegn[e].innerHTML="";
+ 			e++;
+ 		}
+       } 
+    document.getElementById("smiley").innerHTML="";
+ }
+ 
+ function isEqualValues(v1, v2) {
+    var nv1 = v1.replace(/,/g, ".");
+    var nv2 = v2.replace(/,/g, ".");
+    if (isFinite(nv1))
+        return parseFloat(nv1) == parseFloat(nv2)
+    else return v1 == v2;
+ }
+
+ function trim(s) {
+    return s.replace(/^\s+/, '').replace(/\s+$/, '');
+} 
+
+</script>
+   
+]]>
+</Content>
+
+
+
+
+<Content type="html" view="configuration"  preferred_height="240">
+   <![CDATA[
+   <b>Orddeling</b><br />
+   <table id="dest" border="0" style="width: 100%;border-collapse:collapse;">
+   <tr style="background-color:#EEEEEE"><td style="width:50%;">Ord, der skal deles</td><td>Adskil ord-delene med mellemrum</td></tr>
+   </table>
+
+    <script type="text/javascript">
+      function registerHandlers() { 
+       var prefs = new _IG_Prefs();  
+       var pref=prefs.getArray("orddel");
+		dest=document.getElementById("dest");
+		var index=0;
+		for(r=1;r<21;r++){
+			dest.insertRow(r);
+            for (c=0;c<2;c++) {
+                dest.rows[r].insertCell(c);
+                dest.rows[r].cells[c].innerHTML="<input type='text' onchange='handler()' style='width:100%;background-color:#FFFFCC' />";
+                if(typeof pref[index]!=='undefined'){
+                	dest.rows[r].cells[c].childNodes[0].value=pref[index];
+                }
+                index++;
+            }
+		}
+     	}
+     	
+        // Get userprefs
+        var prefs = new gadgets.Prefs();    
+
+     	function handler(){
+ 		var arr = new Array();     	
+      	for(r=1;r<dest.rows.length;r++){
+      	for(c=0;c<dest.rows[r].cells.length;c++){
+      	 	arr[arr.length]=dest.rows[r].cells[c].childNodes[0].value;
+      	}
+      	}
+        prefs.setArray("orddel",arr);      
+        
+      }
+          
+      gadgets.util.registerOnLoadHandler(registerHandlers);  
+      
+    </script>
+    ]]>
+</Content>
+</Module>

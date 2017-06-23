@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Module>
+    <ModulePrefs title="Flervalgsopgave"
+        description="Flervalgsopgave"
+        height="600"
+        width="600"
+        author="Nicolaus Schmidt">
+        <Require feature="setprefs"/>
+    </ModulePrefs>
+	<UserPref 
+		name="fil" 
+		required="true"
+		/>
+    <UserPref
+        name="InputTextArea"
+        display_name="Flervalgsopgave"
+        required="true"
+        />
+<Content type="html" view="home">
+<![CDATA[
+<style type="text/css">
+body
+	{
+	font-family: Arial,sans-serif;
+	margin: 0;
+	padding:0;
+	}
+</style>
+<div id='dest'><img src="//www.google.com/ig/images/spinner.gif"></div>
+
+<script type="text/javascript">
+function onLoad() {
+ var nr=0;
+ var str;
+
+ var prefs = new _IG_Prefs();
+ var s_fil = prefs.getString("fil");
+ var strInput=prefs.getString('InputTextArea');
+ var ord,facit="";
+ var strOutput="";
+ 
+for (i=0;i<strInput.length;i++){
+   if (strInput.substr(i,1)=="[") {
+	ord = strInput.substr(i + 1, strInput.indexOf("]",i+1) - (i+1));
+
+     if((ord!="")&&(ord.indexOf("#"))>-1){
+         facit = "";
+         splOrd = ord.split(",");
+         ps = ord.indexOf("#");
+         ord +=" ";    
+         
+            for(j=0;j<splOrd.length;j++){
+                splOrd[j]=splOrd[j].trim();
+                  if(splOrd[j].indexOf("#")==0){
+                     facit=splOrd[j].substr(1,splOrd[j].length);
+                  }
+            }	
+         
+          strOutput+="<input type='hidden' value='" + facit + "' name='RigtigtSvar'>";
+          strOutput+="<select size='1' name='D"+nr+"'><option></option>";
+           for(j=0;j<splOrd.length;j++){
+             str=splOrd[j].substr(splOrd[j].indexOf("#") + 1);
+             strOutput+="<option value='"+str+"'>"+str+"</option>";
+           }
+          strOutput+="</select>";
+          strOutput+="<span>&nbsp;</span>";
+          
+          i+=ord.length+1;
+          nr++;
+     }
+   }
+          strOutput+=strInput.substr(i,1);
+ }
+ 
+var dest = document.getElementById('dest');
+dest.innerHTML = strOutput;
+}
+    
+
+gadgets.util.registerOnLoadHandler(onLoad);       
+</script>
+  ]]>
+</Content>
+
+<Content type="html" view="home">
+<![CDATA[
+<form method="post">
+<br />
+<input  type="button" value="&#x2713; Tjek" style="color:green" onclick="tjek()"/>
+<input  type="button" value="&#x2718; Slet alt" style="color:red" onclick="sletAlt()"/>
+<span id="smiley" style="color:#FFCC00;font-size:28pt"></span>
+</form>
+
+     
+<script type="text/javascript"> 
+function tjek() {
+    PPoint = 0;
+    count = 0;
+	var divForm=document.getElementById("dest");    
+    var tegn = divForm.getElementsByTagName("span");
+    var sels = divForm.getElementsByTagName("select");
+    var inputs = divForm.getElementsByTagName("input");
+
+    for (var i = 0; i < inputs.length; i++) {
+        if (inputs[i].type == "hidden") {
+
+            if (sels.length > 0) {
+                 v = sels[count].value;
+                 ok = find(inputs[i].value, v);
+            } else {
+                 v = findSelected("D" + count)
+                 ok = inputs[i].value == v
+            }
+
+            if (ok) {
+                tegn[count].style.fontSize = "20";
+                tegn[count].innerHTML = "&#x2714;" + " ";
+                tegn[count].style.color="green";
+                PPoint++
+            }
+            else if (v != "") {
+                tegn[count].style.fontSize = "20";
+                tegn[count].innerHTML = "&#x2718;"; //uchk + " ";
+                tegn[count].style.color="red";
+            }
+            else tegn[count].innerHTML = "&nbsp;";
+            count++;
+        }
+    }
+
+
+    PPoint = Math.round(100 * PPoint / count)
+    if (PPoint==100){
+    	document.getElementById("smiley").innerHTML="&#x263A";
+    }
+    else{
+    	document.getElementById("smiley").innerHTML="";
+    }
+
+}
+
+function find(str1, str2) {
+    if (str2 == "") return false;
+    a = str1.split(",");
+    for (var i = 0; i < a.length; i++)
+        if (a[i] == str2) return true;
+    return false;
+}
+
+function findSelected(name) {
+    var e = document.getElementsByName(name);
+    var v = "";
+    for (var i = 0; i < e.length; i++) {
+        if (e[i].checked) {
+            v+= ","+e[i].value
+        }
+    }
+    return v.substr(1) 
+}
+ function sletAlt(){
+	var divForm=document.getElementById("dest");
+    var sels = divForm.getElementsByTagName("select");
+	var tegn = divForm.getElementsByTagName("span");
+    for (i=0;i<sels.length;i++){
+    		sels[i].selectedIndex="-1";
+        	tegn[i].innerHTML="";
+	}
+ document.getElementById("smiley").innerHTML="";
+ }
+ 
+</script>
+   
+]]>
+</Content>
+
+
+
+
+<Content type="html" view="configuration"  preferred_height="240">
+   <![CDATA[
+   <b>Flervalgsopgave</b><br />
+    Indsæt en tekst. Eksempel: Her er et [stor,#stort,står] hus.
+    <textarea id="InputTextArea" style="height: 180px; width: 100%"></textarea>
+    <script type="text/javascript">
+
+     function registerHandlers() {
+ 
+       // Set userprefs
+       var IGprefs = new _IG_Prefs();  
+       var strSetPref=IGprefs.getString("InputTextArea");
+	   document.getElementById("InputTextArea").value=strSetPref.replace(/<br>/g, '\n');
+        
+         // Get userprefs 
+        var prefs = new gadgets.Prefs();
+        var prefText = document.getElementById('InputTextArea');
+             
+        var handler = function() {
+           prefs.set('InputTextArea', document.getElementById('InputTextArea').value.replace(/\n/g, ' <br>')); 
+        }
+        prefText.onchange = handler;
+        prefText.onkeyup = handler;
+     }
+     gadgets.util.registerOnLoadHandler(registerHandlers);  
+      
+    </script>
+    ]]>
+</Content>
+</Module>
