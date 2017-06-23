@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Module>
+    <ModulePrefs title="Udfyldningsopgave"
+        description="Indsæt en Udfyldningsopgave i din Google Site"
+        height="600"
+        width="600"
+        author="Nicolaus Schmidt">
+        <Require feature="setprefs"/>
+    </ModulePrefs>
+	<UserPref 
+		name="fil" 
+		/>
+    <UserPref
+        name="InputTextArea"
+        />
+<Content type="html" view="home">
+<![CDATA[
+<style type="text/css">
+body
+	{
+	font-family: Arial,sans-serif;
+	margin: 0;
+	padding:0;
+	}
+</style>
+<div><p><audio id="player" style="visibility:hidden;" controls>You cannot use audio tag with your browser</audio></p></div>
+<div id='dest'><img src="//www.google.com/ig/images/spinner.gif"></div>
+
+<script type="text/javascript">
+function onLoad() {
+ var prefs = new _IG_Prefs();
+ var s_fil = prefs.getString("fil");
+ if (s_fil!=""){
+ 	document.getElementById("player").style.visibility="visible";
+ 	document.getElementById("player").src=s_fil;
+ }
+ var strInput=prefs.getString('InputTextArea')+" ";
+ var ord="";
+ var strOutput="";
+ for (i = 0; i < strInput.length; i++){
+  if (strInput.substr(i,1) == "#") {
+	ord = strInput.substr(i + 1, strInput.indexOf(" ",i+1) - (i+1));
+	ord = fjerntegn(ord);
+    if (ord != ""){ 
+        strOutput+="<input type='hidden' value='" + ord + "'>";
+        strOutput+="<input type='text' size='" + ord.length + "' value=''>";
+        strOutput+="<span>&nbsp;</span>"
+        i=i+ord.length+1;
+	}
+  }
+ strOutput = strOutput + strInput.substr(i, 1);
+ }
+ 
+var dest = document.getElementById('dest');
+dest.innerHTML = strOutput;
+}
+    
+function fjerntegn(str){
+return str.replace(/[.,;:'!?«»()\"\"]/g,"");
+}
+
+
+gadgets.util.registerOnLoadHandler(onLoad);       
+</script>
+  ]]>
+</Content>
+
+<Content type="html" view="home">
+<![CDATA[
+<form method="post">
+<br />
+<input  type="button" value="&#x2713; Tjek" style="color:green" onclick="tjek()"/>
+<input  type="button" value="&#x2718; Slet alt" style="color:red" onclick="sletAlt()"/>
+<span id="smiley" style="color:#FFCC00;font-size:28pt"></span>
+</form>
+
+     
+<script type="text/javascript"> 
+  function tjek(){
+	var divForm=document.getElementById("dest");
+    var e = 0;
+    PPoint = 0;
+    var inputs = divForm.getElementsByTagName("input");
+    var tegn = divForm.getElementsByTagName("span");
+    var total = inputs.length / 2;
+    for (i=0;i<inputs.length; i++)
+        if (inputs[i].type == "text") {
+        if (isEqualValues(trim(inputs[i].value), inputs[i - 1].value)) {
+            tegn[e].style.fontSize = "16px";
+            tegn[e].innerHTML = "&#x2714;" + " ";
+            tegn[e].style.color="green";
+            PPoint++;
+        }
+        else if (inputs[i].value!="") {
+            tegn[e].style.fontSize = "16px";
+            tegn[e].innerHTML = "&#x2718;"; 
+            tegn[e].style.color="red";
+            //inputs[i].title = inputs[i-1].value; //hint!
+            
+        };
+        e++;
+    }
+    PPoint = Math.round(100*PPoint/total)
+    document.getElementById("smiley").innerHTML="&#x263A";
+    if (PPoint==100){
+    	document.getElementById("smiley").innerHTML="&#x263A";
+    }
+    else{
+    	document.getElementById("smiley").innerHTML="";
+    }
+
+ }
+
+ function sletAlt(){
+ 	var e=0;
+	var divForm=document.getElementById("dest");
+    var inputs = divForm.getElementsByTagName("input");
+    var tegn = divForm.getElementsByTagName("span");
+     for (i=0;i<inputs.length;i++)
+        if (inputs[i].type == "text") {
+        	inputs[i].value = "";
+ 			tegn[e].innerHTML="";
+ 			e++;
+       }
+     
+ document.getElementById("smiley").innerHTML="";
+ }
+ 
+ function isEqualValues(v1, v2) {
+    var nv1 = v1.replace(/,/g, ".");
+    var nv2 = v2.replace(/,/g, ".");
+    if (isFinite(nv1))
+        return parseFloat(nv1) == parseFloat(nv2)
+    else return v1 == v2;
+ }
+
+ function trim(s) {
+    return s.replace(/^\s+/, '').replace(/\s+$/, '');
+} 
+
+</script>
+   
+]]>
+</Content>
+
+
+
+
+<Content type="html" view="configuration"  preferred_height="240">
+   <![CDATA[
+   <b>Udfyldningsopgave</b><br />
+   Indsæt en mp3-fil: <input id="fil" type="text" value="__UP_fil__" /><br />
+    Indsæt en tekst. Sæt # foran ord, som skal udelades.<br/>
+    <textarea id="InputTextArea" style="height: 180px; width: 100%"></textarea>
+    <script type="text/javascript">
+    
+      function registerHandlers() {
+      
+       // Set userprefs
+       var IGprefs = new _IG_Prefs();  
+       var strSetPref=IGprefs.getString("InputTextArea");
+	   document.getElementById("InputTextArea").value=strSetPref.replace(/<br>/g, '\n');
+        
+
+        // Get userprefs
+        var prefs = new gadgets.Prefs();
+        var prefText = document.getElementById('InputTextArea');
+        var prefLyd = document.getElementById('fil');        
+             
+        var handler = function() {
+           prefs.set('fil',document.getElementById('fil').value);
+           prefs.set('InputTextArea', document.getElementById('InputTextArea').value.replace(/\n/g, ' <br>')); 
+        }
+        prefText.onchange = handler;
+        prefText.onkeyup = handler;
+        prefLyd.onchange = handler;
+        prefLyd.onkeyup = handler;
+      }
+      gadgets.util.registerOnLoadHandler(registerHandlers);  
+      
+    </script>
+    ]]>
+</Content>
+</Module>
